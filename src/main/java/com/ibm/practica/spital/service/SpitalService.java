@@ -107,7 +107,7 @@ public class SpitalService {
     //tema
     public List<Pacient> searchPacientByFirstName(String firstName) {
         log.info("SpitalService.searchPacientByFirstName() searching for pacients with firstName: ", firstName);
-        List<Pacient> pacients = pacientRepository.findAll();
+        List<Pacient> pacients = pacientRepository.findPacientByFirstName(firstName);
         return pacients.stream().filter(pacient -> pacient.getFirstName().equalsIgnoreCase(firstName)).collect(Collectors.toList());
     }
 

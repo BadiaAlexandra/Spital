@@ -89,7 +89,7 @@ public class SpitalController {
 //tema
 
     @GetMapping("/searchPacient")
-    public ResponseEntity<List<Pacient>> searchPacientByFirstName(String firstName) {
+    public ResponseEntity<List<Pacient>> searchPacientByFirstName(@RequestParam String firstName) {
         List<Pacient> foundPacients = service.searchPacientByFirstName(firstName);
 
         if (foundPacients.isEmpty()) {
