@@ -1,11 +1,12 @@
 package com.ibm.practica.spital.controller;
 
 import com.ibm.practica.spital.DTO.AddPacientDTO;
-import com.ibm.practica.spital.DTO.AddReservation;
+import com.ibm.practica.spital.DTO.AddReservationDTO;
 import com.ibm.practica.spital.DTO.PacientDTO;
-import com.ibm.practica.spital.DTO.Reservation;
+import com.ibm.practica.spital.DTO.ReservationDTO;
 import com.ibm.practica.spital.entity.Pacient;
 import com.ibm.practica.spital.service.SpitalService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 import lombok.extern.log4j.Log4j2;
@@ -40,26 +41,31 @@ public class SpitalController {
     }
 
     @GetMapping("/reservations")
-    public List<Reservation> getReservations(){
+    public List<ReservationDTO> getReservations(){
         return service.getReservations();
     }
 
-    @GetMapping("/reservation")
-    public Reservation getReservation(String reservationID){
-        return service.getReservation();
-    }
-    @GetMapping("/getPacientReservation")
-    public ResponseEntity<List<Reservation>> getReservationForPacient(String pacientID){
-
-        if(service.getReservationForPacient(pacientID).isEmpty()){
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @GetMapping("/reservation/{reservationID}")
+    public ResponseEntity<ReservationDTO> getReservation(@RequestParam String reservationID){
+        ReservationDTO result = service.getReservation(reservationID);
+        if(ObjectUtils.isEmpty(result)){
+            log.info("getReservation() could not find any reservation with ID: " + reservationID);
+            return ResponseEntity.notFound().build();
         }
-
-        return ResponseEntity.of(Optional.ofNullable(service.getReservationForPacient(pacientID)));
+        return ResponseEntity.ok(result);
+    }
+    @GetMapping("/getPacientReservation/{pacientID}")
+    public ResponseEntity<List<ReservationDTO>> getReservationForPacient(@RequestParam String pacientID){
+        List<ReservationDTO> result = service.getReservationForPacient(pacientID);
+        if(ObjectUtils.isEmpty(result)){
+            log.info("getPacientReservation() could not find any reservation for pacientID: " + pacientID);
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/addReservation")
-    public ResponseEntity addReservation(@RequestBody  AddReservation reservation){
+    public ResponseEntity addReservation(@RequestBody @Valid AddReservationDTO reservation){
 
         return service.addReservation(reservation) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
@@ -70,13 +76,13 @@ public class SpitalController {
         return service.addPacient(pacient) ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
     }
 
-    @DeleteMapping("/deleteReservation")
-    public ResponseEntity deleteReservation(String reservationID){
-
-        return service.deleteReservation(reservationID) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
+    @DeleteMapping("/deleteReservation/{id}")
+    public ResponseEntity deleteReservation(@RequestParam String reservationID){
+        service.deleteReservation(reservationID);
+        return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/deletePacient/{reservationID}")
+    @DeleteMapping("/deletePacient/{id}")
     public ResponseEntity deletePacient(@RequestParam String pacientID){
         return service.deletePacient(pacientID) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
@@ -85,6 +91,7 @@ public class SpitalController {
     public ResponseEntity editPacient(@RequestBody PacientDTO pacientDTO){
         return service.editPacient(pacientDTO) ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
     }
+
 
 //tema
 
@@ -98,6 +105,5 @@ public class SpitalController {
             return ResponseEntity.of(Optional.ofNullable(foundPacients));
         }
     }
-
-
 }
+
